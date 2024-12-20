@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles1.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Add Activity</title>
+</head>
+<body>
+    <h1>Add New Activity</h1>
+    <form id="addActivityForm">
+        <label for="activity">Activity:</label>
+        <input type="text" id="activity" name="activity" required><br>
+    
+        <label for="iso">ISO:</label>
+        <select id="iso" name="iso" required>
+            <option value="" disabled selected>Select ISO</option>
+        </select><br>
+    
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required><br>
+    
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea><br>
+    
+        <button type="submit">Add</button>
+    </form>
+    
+    <script>
+        // Load ISO List dynamically
+        document.addEventListener("DOMContentLoaded", () => {
+            const isoSelect = document.getElementById("iso");
+
+            // Fetch ISO list from server
+            fetch('/get_iso')
+                .then(response => response.json())
+                .then(data => {
+                    // Populate the select dropdown
+                    data.forEach(iso => {
+                        const option = document.createElement("option");
+                        option.value = iso;
+                        option.textContent = iso;
+                        isoSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error loading ISO list:", error);
+                });
+        });
+
+        // Handle form submission
+        document.getElementById("addActivityForm").addEventListener("submit", async (event) => {
+            event.preventDefault(); // Prevent traditional form submission
+            
+            const formData = new FormData(event.target); // Get form data
+
+            // Send data to the server
+            try {
+                const response = await fetch('/add', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Show success popup
+                    Swal.fire({
+                        title: 'Success!',
+                        text: result.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Redirect to index page after confirmation
+                        window.location.href = '/';
+                    });
+                } else {
+                    // Show error popup
+                    Swal.fire({
+                        title: 'Error!',
+                        text: result.message || 'An error occurred while adding the activity.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error("Error submitting form:", error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Something went wrong! Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Update Sub Activity</title>
+</head>
+<body>
+    <h1>Update Sub Activity</h1>
+    <form id="updateSubActivityForm" method="POST" enctype="multipart/form-data" action="/sub_activity/{{ sub_activity['id'] }}/update">
+        <label for="updatedName">Sub Activity Name:</label>
+        <input type="text" name="updatedName" id="updatedName" value="{{ sub_activity['name'] }}" required><br>
+        <label for="newFiles">Add New Files:</label>
+        <input type="file" name="newFiles" id="newFiles" multiple><br>
+        <label for="updatedDate">New Upload Date:</label>
+        <input type="date" name="updatedDate" id="updatedDate" value="{{ sub_activity['uploaded_at'] }}"><br>
+        <button type="submit">Update</button>
+        <a href="/activity/{{ sub_activity['activity_id'] }}/sub_activities">
+            <button type="button">Cancel</button>
+        </a>
+    </form>
+
+    <script>
+        document.getElementById("updateSubActivityForm").addEventListener("submit", async (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const subActivityId = "{{ sub_activity['id'] }}";
+            const activityId = "{{ sub_activity['activity_id'] }}"; // Pastikan ini tersedia
+
+            try {
+                const response = await fetch(`/sub_activity/${subActivityId}/update`, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    Swal.fire({
+                        title: "Success!",
+                        text: "Sub activity updated successfully.",
+                        icon: "success",
+                        confirmButtonText: "OK",
+                    }).then(() => {
+                        // Redirect ke halaman yang benar
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Error!",
+                        text: result.message || "Failed to update sub-activity.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: "Error!",
+                    text: "An error occurred while processing your request.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+            }
+        });
+    </script>
+</body>
+</html>

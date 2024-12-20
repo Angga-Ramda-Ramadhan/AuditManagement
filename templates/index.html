@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Management</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+
+</head>
+<body>
+    <h1>Audit Activity</h1>
+    <select id="isoSelect">
+        <option value="" disabled selected>Select ISO</option>
+        <option value="ISO 45001">ISO 45001</option>
+        <option value="ISO 9001">ISO 9001</option>
+    </select>
+    <input type="text" id="newISO" placeholder="Add New ISO">
+    <button id="addISO">Add ISO</button>
+
+    <table id="auditTable" border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Activity</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>File</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be dynamically loaded here -->
+        </tbody>
+    </table>
+
+    <a href="/add" class="btn">Add New Entry</a>
+
+    <script>
+        document.getElementById('isoSelect').addEventListener('change', function() {
+            const iso = this.value;
+            fetch(`/get_data/${iso}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#auditTable tbody');
+                    tableBody.innerHTML = '';
+                    data.forEach(item => {
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td>${item.id}</td>
+                                <td>${item.activity}</td>
+                                <td>${item.date}</td>
+                                <td>${item.description}</td>
+                                <td><a href="/static/files/${item.file}" download>Download</a></td>
+                                <td>
+                                    <button onclick="updateActivity(${item.id})">✏️</button>
+                                    <button onclick="deleteActivity(${item.id})">🗑️</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                });
+        });
+
+        function updateActivity(id) {
+            alert(`Update functionality for ID ${id} is not yet implemented.`);
+        }
+
+        function deleteActivity(id) {
+            alert(`Delete functionality for ID ${id} is not yet implemented.`);
+        }
+        
+        document.getElementById('addISO').addEventListener('click', function() {
+            const newISO = document.getElementById('newISO').value.trim();
+            if (newISO) {
+                fetch('/add_iso', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ iso: newISO })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.iso_list) {
+                        const isoSelect = document.getElementById('isoSelect');
+                        isoSelect.innerHTML = '<option value="" disabled selected>Select ISO</option>';
+                        data.iso_list.forEach(iso => {
+                            isoSelect.innerHTML += `<option value="${iso}">${iso}</option>`;
+                        });
+                    }
+                });
+            }
+        });
+        function updateActivity(id) {
+            const updatedActivity = prompt("Enter new activity details (comma-separated: activity, date, description)");
+            if (updatedActivity) {
+                const [activity, date, description] = updatedActivity.split(',');
+                fetch(`/update/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ activity: activity.trim(), date: date.trim(), description: description.trim() })
+                })
+                .then(response => response.json())
+                .then(data => alert(data.message))
+                .then(() => location.reload());
+            }
+        }
+        function deleteActivity(id) {
+            if (confirm('Are you sure you want to delete this activity?')) {
+                fetch(`/delete/${id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => alert(data.message))
+                .then(() => location.reload());
+            }
+        }
+    
+    </script>
+</body>
+</html>

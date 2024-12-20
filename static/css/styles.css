@@ -1,0 +1,155 @@
+/* Umum */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f8f4; /* Putih dengan sedikit hijau */
+    color: #333;
+}
+
+header {
+    background-color: #4CAF50; /* Hijau utama */
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Kontainer */
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Formulir */
+form {
+    margin-bottom: 2rem;
+}
+
+input, select, button {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+input:focus, select:focus, button:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Tabel */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2rem;
+}
+
+table thead {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+table th, table td {
+    padding: 0.75rem;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+table tbody tr:hover {
+    background-color: #e8f5e9;
+}
+
+/* Ikon */
+.icon {
+    cursor: pointer;
+    margin: 0 5px;
+    font-size: 1.2rem;
+    color: #4CAF50;
+}
+
+.icon:hover {
+    color: #388e3c;
+}
+
+/* Pesan */
+.alert {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: white;
+}
+
+.alert-success {
+    background-color: #4CAF50;
+    border-color: #45a049;
+}
+
+.alert-error {
+    background-color: #f44336;
+    border-color: #e53935;
+}
+
+/* Tombol Tambah ISO */
+#addISO {
+    width: auto;
+    display: inline-block;
+    margin-top: 1rem;
+}
+
+#newISO {
+    width: calc(100% - 120px);
+    display: inline-block;
+}
+
+.subActivity {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    resize: vertical;
+}
+
+h3 {
+    color: #4CAF50;
+    margin-bottom: 1rem;
+}

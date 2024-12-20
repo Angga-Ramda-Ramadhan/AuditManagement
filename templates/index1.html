@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles1.css">
+    <title>Audit Management</title>
+</head>
+<body>
+    <h1>Audit Activity</h1>
+    <div>
+        <select id="isoSelect">
+            <option value="" disabled selected>Select ISO</option>
+        </select>
+        <input type="text" id="newISO" placeholder="Add New ISO">
+        <button id="addISO">Add ISO</button>
+    </div>
+
+    <table border="1" id="auditTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Activity</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data dynamically added here -->
+        </tbody>
+    </table>
+
+    <a href="/add" class="btn">Add New Activity</a>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

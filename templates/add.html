@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Activity</title>
+    <link rel="stylesheet" href="static\css\styles.css">
+</head>
+<body>
+    <h1>Add New Activity</h1>
+    <form id="addForm">
+        <select id="iso" required>
+            <option value="" disabled selected>Choose ISO</option>
+            <option value="ISO 45001">ISO 45001</option>
+            <option value="ISO 9001">ISO 9001</option>
+        </select>
+        <input type="text" id="activity" placeholder="Activity" required>
+        <input type="date" id="date" required>
+        <textarea id="description" placeholder="Description" required></textarea>
+        <input type="file" id="file" required>
+        <button type="submit">Add</button>
+    </form>
+
+    <script>
+        document.getElementById('addForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const data = {
+                id: Date.now(), // Generate unique ID
+                iso: document.getElementById('iso').value,
+                activity: document.getElementById('activity').value,
+                date: document.getElementById('date').value,
+                description: document.getElementById('description').value,
+                file: document.getElementById('file').files[0].name
+            };
+
+            fetch('/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert(result.message);
+                window.location.href = '/';
+            });
+        });
+        fetch('/get_iso')
+            .then(response => response.json())
+            .then(isoList => {
+                const isoSelect = document.getElementById('iso');
+                isoSelect.innerHTML = '<option value="" disabled selected>Choose ISO</option>';
+                isoList.forEach(iso => {
+                    isoSelect.innerHTML += `<option value="${iso}">${iso}</option>`;
+                });
+            });
+    </script>
+</body>
+</html>

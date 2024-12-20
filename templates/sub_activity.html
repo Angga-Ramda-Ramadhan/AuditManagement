@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Sub Activities</title>
+</head>
+<body>
+    <h1>Sub Activities for {{ activity["activity"] }}</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Sub Activity</th>
+                <th>Uploaded At</th>
+                <th>Files</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sub in activity["sub_activities"] %}
+            <tr>
+                <td>{{ sub["id"] }}</td>
+                <td>{{ sub["name"] }}</td>
+                <td>{{ sub["uploaded_at"] }}</td>
+                <td>
+                    {% for file in sub["files"] %}
+                    <a href="/static/files/{{ file | escape }}" download>{{ file }}</a>
+                    <button onclick="deleteFile('{{ sub['id'] | escape }}', '{{ file | escape }}')">🗑️</button><br>
+                    {% endfor %}
+                </td>
+                <td>
+                    <a href="/sub_activity/{{ sub['id'] }}/edit">
+                        <button>✏️ Update</button>
+                    </a>
+                    <button onclick="deleteSubActivity('{{ sub["id"] | escape }}')">❌ Delete</button>
+                </td>
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Add Sub Activity</h2>
+    <form id="addSubActivityForm"method="POST" enctype="multipart/form-data">
+        <label for="subActivityName">Sub Activity Name:</label>
+        <input type="text" name="subActivityName" required><br>
+        <label for="files">Files:</label>
+        <input type="file" name="files" multiple><br>
+        <button type="submit">Add</button>
+    </form>
+
+    <!-- Update Form Modal -->
+    <div id="updateForm" style="display: none;">
+        <h2>Update Sub Activity</h2>
+        <form method="POST" id="updateSubActivityForm" enctype="multipart/form-data">
+            <label for="updatedName">Sub Activity Name:</label>
+            <input type="text" name="updatedName" id="updatedName"><br>
+            <label for="newFiles">Add New Files:</label>
+            <input type="file" name="newFiles" id="newFiles" multiple><br>
+            <label for="updatedDate">New Upload Date:</label>
+            <input type="date" name="updatedDate" id="updatedDate"><br>
+            <button type="submit">Update</button>
+            <button type="button" onclick="hideUpdateForm()">Cancel</button>
+        </form>
+    </div>
+
+    <script src="\static\js\script1.js"></script>
+</body>
+</html>
