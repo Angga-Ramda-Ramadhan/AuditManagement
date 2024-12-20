@@ -3,36 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/styles1.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
     <title>Audit Management</title>
 </head>
 <body>
-    <h1>Audit Activity</h1>
-    <div>
-        <select id="isoSelect">
-            <option value="" disabled selected>Select ISO</option>
-        </select>
-        <input type="text" id="newISO" placeholder="Add New ISO">
-        <button id="addISO">Add ISO</button>
+    <div class="header">
+        <img alt="SPIL logo" src="static\1200px-Logospil.png"/>
+        <h1>Audit Management</h1>
     </div>
-
-    <table border="1" id="auditTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Activity</th>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Data dynamically added here -->
-        </tbody>
-    </table>
-
-    <a href="/add" class="btn">Add New Activity</a>
-
+    <div class="container">
+        <div class="title">Audit Activity</div>
+        <div class="subtitle">Manage and Monitor Your Audit Activities</div>
+        <div class="projects">
+            <h2>QHSE AUDIT MANAGEMENT SYSTEM</h2>
+            <div>
+                <select id="isoSelect">
+                    <option value="" disabled selected>Select ISO</option>
+                </select>
+                <input type="text" id="newISO" placeholder="Add New ISO">
+                <button id="addISO">Add ISO</button>
+            </div>
+        </div>
+        <div class="projects">
+            <h2>Audit Activities</h2>
+            <table border="1" id="auditTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Activity</th>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data dynamically added here -->
+                </tbody>
+            </table>
+            <a href="/add" class="btn">Add New Activity</a>
+        </div>
+    </div>
     <script src="/static/js/main.js"></script>
 </body>
 </html>
