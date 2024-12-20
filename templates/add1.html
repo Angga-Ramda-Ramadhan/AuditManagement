@@ -3,32 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/styles1.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Add Activity</title>
 </head>
 <body>
-    <h1>Add New Activity</h1>
-    <form id="addActivityForm">
-        <label for="activity">Activity:</label>
-        <input type="text" id="activity" name="activity" required><br>
-    
-        <label for="iso">ISO:</label>
-        <select id="iso" name="iso" required>
-            <option value="" disabled selected>Select ISO</option>
-        </select><br>
-    
-        <label for="date">Date:</label>
-        <input type="date" id="date" name="date" required><br>
-    
-        <label for="description">Description:</label>
-        <textarea id="description" name="description" required></textarea><br>
-    
-        <button type="submit">Add</button>
-    </form>
-    
+    <div class="container">
+        <header class="header">
+            <img src="static/1200px-Logospil.png" alt="SPIL Logo"> <!-- Replace with your actual logo -->
+            <h1>Add New Activity</h1>
+        </header>
+
+        <section class="projects">
+            <h2>Add a New Activity</h2>
+            <form id="addActivityForm">
+                <label for="activity" class="title">Activity:</label>
+                <input type="text" id="activity" name="activity" required class="input-field" placeholder="Enter activity name"><br>
+            
+                <label for="iso" class="title">ISO:</label>
+                <select id="iso" name="iso" required class="input-field">
+                    <option value="" disabled selected>Select ISO</option>
+                </select><br>
+            
+                <label for="date" class="title">Date:</label>
+                <input type="date" id="date" name="date" required class="input-field"><br>
+            
+                <label for="description" class="title">Description:</label>
+                <textarea id="description" name="description" required class="input-field" placeholder="Enter a brief description"></textarea><br>
+            
+                <button type="submit" class="btn">Add</button>
+            </form>
+        </section>
+    </div>
+
     <script>
-        // Load ISO List dynamically
+        // Load ISO list dynamically
         document.addEventListener("DOMContentLoaded", () => {
             const isoSelect = document.getElementById("iso");
 
@@ -36,7 +45,6 @@
             fetch('/get_iso')
                 .then(response => response.json())
                 .then(data => {
-                    // Populate the select dropdown
                     data.forEach(iso => {
                         const option = document.createElement("option");
                         option.value = iso;
@@ -55,7 +63,6 @@
             
             const formData = new FormData(event.target); // Get form data
 
-            // Send data to the server
             try {
                 const response = await fetch('/add', {
                     method: 'POST',
@@ -65,18 +72,15 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    // Show success popup
                     Swal.fire({
                         title: 'Success!',
                         text: result.message,
                         icon: 'success',
                         confirmButtonText: 'OK'
                     }).then(() => {
-                        // Redirect to index page after confirmation
                         window.location.href = '/';
                     });
                 } else {
-                    // Show error popup
                     Swal.fire({
                         title: 'Error!',
                         text: result.message || 'An error occurred while adding the activity.',
