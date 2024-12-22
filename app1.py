@@ -1,7 +1,7 @@
-from flask import Flask, render_template, request, jsonify, redirect, send_file  
+from flask import Flask, render_template, request, jsonify, redirect, send_file
 import os
 from datetime import datetime
-import io 
+import io
 import zipfile
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -36,131 +36,64 @@ def get_data(iso):
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_data():
-    if request.method == 'POST':
-        if request.is_json:
-            # Data dikirim sebagai JSON
-            new_activity = request.get_json()
+    if request.method == 'GET':
+        selected_iso = request.args.get('iso', '')  # ISO dari query string
+        if not selected_iso:
+            return redirect('/')  # Jika tidak ada ISO, kembali ke halaman utama
+        return render_template('add1.html', selected_iso=selected_iso)
+
+    elif request.method == 'POST':
+        try:
+            new_activity = {
+                "id": len(data_storage) + 1,
+                "activity": request.form['activity'],
+                "iso": request.form['iso'],
+                "date": datetime.now().strftime('%Y-%m-%d'),  # Tanggal otomatis
+                "description": request.form['description'],
+                "files": [],
+                "sub_activities": [],  # Menambahkan sub-activities
+            }
+            # Tangani file yang diunggah
+            if 'file' in request.files:
+                uploaded_files = request.files.getlist('file')
+                print(f"Received files: {[file.filename for file in uploaded_files]}")  # Debugging log
+                for uploaded_file in uploaded_files:
+                    filename = uploaded_file.filename
+                    filepath = os.path.join('uploads', filename)
+                    uploaded_file.save(filepath)
+                    new_activity["files"].append(filename)
+            else:
+                print("No files found in request")  # Debugging log
+
+            # Tangani sub-activities
+            sub_activities = []
+            for key in request.form:
+                if key.startswith("sub_activities"):
+                    sub_activity_index = key.split("[")[1].split("]")[0]  # Ambil index sub-activity
+                    sub_activity_name = request.form.get(f"sub_activities[{sub_activity_index}][name]")
+                    sub_activity_files = request.files.getlist(f"sub_activities[{sub_activity_index}][file]")
+                    sub_activity_data = {
+                        "name": sub_activity_name,
+                        "files": []
+                    }
+
+                    # Simpan file sub-activity
+                    for sub_file in sub_activity_files:
+                        filename = sub_file.filename
+                        filepath = os.path.join('uploads', filename)
+                        sub_file.save(filepath)
+                        sub_activity_data["files"].append(filename)
+
+                    sub_activities.append(sub_activity_data)
+
+            # Menambahkan sub-activities ke aktivitas utama
+            new_activity["sub_activities"] = sub_activities
             data_storage.append(new_activity)
+
             return jsonify({"message": "Activity added successfully!"}), 201
-        else:
-            # Data dikirim sebagai form
-            try:
-                new_activity = {
-                    "id": len(data_storage) + 1,
-                    "activity": request.form['activity'],
-                    "iso": request.form['iso'],
-                    "date": request.form['date'],
-                    "description": request.form['description'],
-                    "files": [],
-                    "sub_activities": []
-                }
-                data_storage.append(new_activity)
-                return jsonify({"message": "Activity added successfully!"}), 201
-            except KeyError as e:
-                return f"KeyError: Missing form field {str(e)}", 400
+        except KeyError as e:
+            return f"KeyError: Missing form field {str(e)}", 400
     return render_template('add1.html')
-
-
-# Page and API to view and add sub-activity
-@app.route('/sub_activity/<int:activity_id>', methods=['GET', 'POST'])
-def sub_activity(activity_id):
-    print(f"Received activity_id: {activity_id}")  # Debugging
-    activity = next((item for item in data_storage if item['id'] == activity_id), None)
-    if not activity:
-        print(f"Activity not found: {activity_id}")
-        return "Activity not found", 404
-
-    if request.method == 'POST':
-        sub_activity_name = request.form['subActivityName']
-        uploaded_files = request.files.getlist('files')
-
-        # Save uploaded files
-        saved_files = []
-        for file in uploaded_files:
-            file_path = os.path.join('static/files', file.filename)
-            file.save(file_path)
-            saved_files.append(file.filename)
-
-        # Add sub-activity
-        new_sub_activity = {
-            "id": len(activity['sub_activities']) + 1,
-            "name": sub_activity_name,
-            "uploaded_at": datetime.now().strftime("%Y-%m-%d"),
-            "files": saved_files
-        }
-        activity["sub_activities"].append(new_sub_activity)
-        return jsonify({"message": "Sub activity added successfully!"})
-
-    return render_template('sub_activity.html', activity=activity)
-
-#update sub
-@app.route('/sub_activity/<int:sub_id>/delete_file', methods=['POST'])
-def delete_file(sub_id):
-    file_name = request.json.get('file')
-    for activity in data_storage:
-        for sub in activity["sub_activities"]:
-            if sub["id"] == sub_id:
-                if file_name in sub["files"]:
-                    sub["files"].remove(file_name)
-                    return jsonify({"message": "File deleted successfully!"})
-    return jsonify({"message": "File not found!"}), 404
-
-
-@app.route('/sub_activity/<int:sub_id>/delete', methods=['POST'])
-def delete_sub_activity(sub_id):
-    for activity in data_storage:
-        activity["sub_activities"] = [
-            sub for sub in activity["sub_activities"] if sub["id"] != sub_id
-        ]
-    return jsonify({"message": "Sub-activity deleted successfully!"})
-
-
-@app.route('/sub_activity/<int:sub_id>/edit', methods=['GET'])
-def edit_sub_activity(sub_id):
-    # Cari sub-aktivitas berdasarkan ID
-    for activity in data_storage:
-        for sub in activity["sub_activities"]:
-            if sub["id"] == sub_id:
-                return render_template('update_sub_activity.html', sub_activity=sub)
-    return "Sub-activity not found", 404
-
-@app.route('/sub_activity/<int:sub_id>/update', methods=['POST'])
-def update_sub_activity(sub_id):
-    updated_name = request.form.get('updatedName')
-    updated_date = request.form.get('updatedDate')
-    new_files = request.files.getlist('newFiles')
-
-    # Iterasi untuk menemukan sub-activity yang sesuai
-    for activity in data_storage:
-        for sub in activity["sub_activities"]:
-            if sub["id"] == sub_id:
-                # Update data jika ada input
-                if updated_name:
-                    sub["name"] = updated_name
-                if updated_date:
-                    sub["uploaded_at"] = updated_date
-
-                # Menyimpan file baru
-                for file in new_files:
-                    if file and file.filename:  # Pastikan ada file
-                        file_path = f'static/files/{file.filename}'
-                        try:
-                            file.save(file_path)  # Simpan file
-                        except PermissionError:
-                            return jsonify({'status': 'error', 'message': 'Permission denied to save file'}), 500
-
-                        # Tambahkan ke daftar file jika belum ada
-                        if file.filename not in sub["files"]:
-                            sub["files"].append(file.filename)
-
-                # Respon sukses
-                return jsonify({
-                    'status': 'success',
-                    'message': 'Sub activity updated successfully',
-                })
-
-    # Jika sub-activity tidak ditemukan
-    return jsonify({'status': 'error', 'message': 'Sub-activity not found'}), 404
 
 @app.route('/activity/<int:activity_id>/delete', methods=['POST'])
 def delete_activity(activity_id):
@@ -173,38 +106,42 @@ def delete_activity(activity_id):
     return jsonify({"message": "Activity not found!"}), 404
 
 
-# Route untuk download semua file dari sub-activity
-@app.route('/activity/<int:activity_id>/download', methods=['GET'])
-def download_activity_files(activity_id):
-    # Cari activity berdasarkan ID
-    activity = next((item for item in data_storage if item['id'] == activity_id), None)
+@app.route('/activity/<int:activity_id>/files', methods=['GET'])
+def get_activity_files(activity_id):
+    activity = next((item for item in data_storage if item["id"] == activity_id), None)
+    if activity:
+        print(f"Files for activity {activity_id}: {activity['files']}")  # Debug
+        return jsonify(activity["files"])
+    print(f"Activity {activity_id} not found!")  # Debug
+    return jsonify({"message": "Activity not found!"}), 404
+
+@app.route('/activity/<int:activity_id>/upload', methods=['POST'])
+def upload_file(activity_id):
+    # Cari aktivitas berdasarkan ID
+    activity = next((item for item in data_storage if item["id"] == activity_id), None)
     if not activity:
         return jsonify({"message": "Activity not found!"}), 404
 
-    # Gabungkan semua file dari sub-activities
-    all_files = []
-    for sub in activity.get("sub_activities", []):
-        all_files.extend(sub.get("files", []))
+    # Cek apakah ada file dalam request
+    if 'file' not in request.files:
+        return jsonify({"message": "No file provided!"}), 400
 
-    if not all_files:
-        return jsonify({"message": "No files to download in sub-activities!"}), 404
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"message": "No selected file!"}), 400
 
-    # Membuat file ZIP dalam memori
-    memory_file = io.BytesIO()
-    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for file_name in all_files:
-            file_path = os.path.join('static/files', file_name)
-            if os.path.exists(file_path):
-                zf.write(file_path, arcname=file_name)  # Tambahkan file ke ZIP
+    # Tambahkan nama file ke aktivitas
+    activity["files"].append(file.filename)
+    return jsonify({"message": f"File {file.filename} uploaded successfully!"}), 200
 
-    memory_file.seek(0)  # Reset pointer file ZIP
+@app.route('/activity/<int:activity_id>/subactivities', methods=['GET'])
+def get_subactivities(activity_id):
+    # Mengambil sub-activities dari aktivitas yang ada
+    activity = next((item for item in data_storage if item["id"] == activity_id), None)
+    if activity:
+        return jsonify(activity["sub_activities"])  # Kembalikan sub-activities yang ada
+    else:
+        return jsonify({"message": "No sub-activities found"}), 404
 
-    # Mengembalikan file ZIP ke user
-    return send_file(
-        memory_file,
-        mimetype='application/zip',
-        as_attachment=True,
-        download_name=f'activity_{activity_id}_files.zip'
-    )
 if __name__ == "__main__":
     app.run(debug=True)

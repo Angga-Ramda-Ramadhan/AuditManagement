@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <title>Audit Management</title>
 </head>
 <body>
     <div class="header">
-        <img alt="SPIL logo" src="static\1200px-Logospil.png"/>
+        <img alt="SPIL logo" src="static/1200px-Logospil.png"/>
         <h1>Audit Management</h1>
     </div>
     <div class="container">
@@ -40,7 +42,7 @@
                     <!-- Data dynamically added here -->
                 </tbody>
             </table>
-            <a href="/add" class="btn">Add New Activity</a>
+            <a id="addActivityBtn" class="btn">Add New Activity</a>
         </div>
     </div>
     <script src="/static/js/main.js"></script>
