@@ -10,93 +10,141 @@
 <body>
     <div class="container">
         <header class="header">
-            <img src="static/1200px-Logospil.png" alt="SPIL Logo"> <!-- Replace with your actual logo -->
+            <img src="/static/1200px-Logospil.png" alt="SPIL Logo">
             <h1>Add New Activity</h1>
         </header>
 
         <section class="projects">
             <h2>Add a New Activity</h2>
-            <form id="addActivityForm">
+            <form id="addActivityForm" action="/add" method="POST" enctype="multipart/form-data">
+                <!-- Tampilkan ISO yang dipilih -->
+                <p><strong>Selected ISO:</strong> <span id="selectedISOText"></span></p>
+        
                 <label for="activity" class="title">Activity:</label>
                 <input type="text" id="activity" name="activity" required class="input-field" placeholder="Enter activity name"><br>
-            
-                <label for="iso" class="title">ISO:</label>
-                <select id="iso" name="iso" required class="input-field">
-                    <option value="" disabled selected>Select ISO</option>
-                </select><br>
-            
-                <label for="date" class="title">Date:</label>
-                <input type="date" id="date" name="date" required class="input-field"><br>
-            
+        
+                <!-- Field hidden ISO -->
+                <input type="hidden" id="iso" name="iso" value="{{ selected_iso }}">
+        
                 <label for="description" class="title">Description:</label>
                 <textarea id="description" name="description" required class="input-field" placeholder="Enter a brief description"></textarea><br>
-            
+        
+                <!-- Tombol untuk menambahkan Sub-Activity -->
+                <button type="button" id="addSubActivityButton" class="btn">Add Sub-Activity</button>
+        
+                <!-- Container untuk menampilkan form sub-activity -->
+                <div id="subActivitiesContainer"></div>
+        
                 <button type="submit" class="btn">Add</button>
             </form>
         </section>
+        
     </div>
 
     <script>
-        // Load ISO list dynamically
         document.addEventListener("DOMContentLoaded", () => {
-            const isoSelect = document.getElementById("iso");
+            // Ambil parameter ISO dari URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedISO = urlParams.get("iso");
+            const subActivitiesContainer = document.getElementById("subActivitiesContainer");
+            const addSubActivityButton = document.getElementById("addSubActivityButton");
 
-            // Fetch ISO list from server
-            fetch('/get_iso')
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(iso => {
-                        const option = document.createElement("option");
-                        option.value = iso;
-                        option.textContent = iso;
-                        isoSelect.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error("Error loading ISO list:", error);
+            // Tambahkan form sub-activity ketika tombol diklik
+            addSubActivityButton.addEventListener("click", () => {
+                const subActivityIndex = subActivitiesContainer.children.length; // Hitung jumlah sub-activity
+
+                // Buat form sub-activity baru
+                const subActivityForm = document.createElement("div");
+                subActivityForm.classList.add("sub-activity");
+                subActivityForm.innerHTML = `
+                    <label for="subActivityName${subActivityIndex}" class="title">Sub-Activity Name:</label>
+                    <input type="text" id="subActivityName${subActivityIndex}" name="sub_activities[${subActivityIndex}][name]" required class="input-field" placeholder="Enter sub-activity name"><br>
+
+                    <label for="subActivityFile${subActivityIndex}" class="title">Sub-Activity File:</label>
+                    <input type="file" id="subActivityFile${subActivityIndex}" name="sub_activities[${subActivityIndex}][file]" multiple><br>
+                `;
+
+                // Tambahkan ke container
+                subActivitiesContainer.appendChild(subActivityForm);
+            });
+
+            if (!selectedISO) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'No ISO selected. Redirecting to the main page.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = '/'; // Redirect ke halaman utama
                 });
-        });
+                return; // Hentikan eksekusi jika ISO tidak ditemukan
+            }
 
-        // Handle form submission
-        document.getElementById("addActivityForm").addEventListener("submit", async (event) => {
-            event.preventDefault(); // Prevent traditional form submission
-            
-            const formData = new FormData(event.target); // Get form data
+            // Tampilkan ISO di halaman
+            const isoTextElement = document.getElementById("selectedISOText");
+            if (isoTextElement) {
+                isoTextElement.textContent = selectedISO;
+            }
 
-            try {
-                const response = await fetch('/add', {
-                    method: 'POST',
-                    body: formData
-                });
+            // Isi field hidden ISO
+            const isoHiddenField = document.getElementById("iso");
+            if (isoHiddenField) {
+                isoHiddenField.value = selectedISO;
+            }
 
-                const result = await response.json();
+            // Handle form submission
+            const formElement = document.getElementById("addActivityForm");
+            formElement.addEventListener("submit", async (event) => {
+                event.preventDefault(); // Cegah form default submission
 
-                if (response.ok) {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: result.message,
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        window.location.href = '/';
+                const formData = new FormData(event.target); // Ambil data form
+
+                // Loop through sub-activities to append each file
+                const subActivities = subActivitiesContainer.children;
+                for (let i = 0; i < subActivities.length; i++) {
+                    const subActivityFiles = subActivities[i].querySelector('input[type="file"]');
+                    if (subActivityFiles && subActivityFiles.files.length > 0) {
+                        for (let file of subActivityFiles.files) {
+                            formData.append(`sub_activities[${i}][file]`, file); // Menambahkan file sub-activity ke formData
+                        }
+                    }
+                }
+
+                try {
+                    const response = await fetch('/add', {
+                        method: 'POST',
+                        body: formData
                     });
-                } else {
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: result.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = '/'; // Redirect ke halaman utama
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: result.message || 'An error occurred while adding the activity.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error submitting form:", error);
                     Swal.fire({
                         title: 'Error!',
-                        text: result.message || 'An error occurred while adding the activity.',
+                        text: 'Something went wrong! Please try again.',
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
                 }
-            } catch (error) {
-                console.error("Error submitting form:", error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Something went wrong! Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            }
+            });
         });
     </script>
 </body>

@@ -25,12 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${activity.id}</td>
-                        <td><a href="/sub_activity/${activity.id}">${activity.activity}</a></td>
+                        <td>${activity.activity}</td>
                         <td>${activity.date}</td>
                         <td>${activity.description}</td>
                         <td>
                             <button class="delete-btn" data-id="${activity.id}">Delete</button>
-                            <button class="download-btn" data-id="${activity.id}">Download</button>
+                            <button class="view-btn" data-id="${activity.id}">View</button>
                         </td>
 
                     `;
@@ -57,40 +57,53 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    
-    auditTableBody.addEventListener("click", function (event) {
-        // Event untuk tombol Download
-        if (event.target.classList.contains("download-btn")) {
+    auditTableBody.addEventListener("click", (event) => {
+        if (event.target.classList.contains("view-btn")) {
             const activityId = event.target.getAttribute("data-id");
     
-            fetch(`/activity/${activityId}/download`, {
-                method: "GET",
-            })
-            .then(response => {
-                if (response.ok) {
-                    return response.blob(); // Mengubah response menjadi file blob
-                } else {
-                    throw new Error("Failed to download files.");
-                }
-            })
-            .then(blob => {
-                // Membuat link virtual untuk mengunduh file
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `activity_${activityId}_files.zip`; // Nama file ZIP
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url); // Membersihkan URL
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("Failed to download files.");
-            });
+            fetch(`/activity/${activityId}/subactivities`)
+                .then((response) => response.json())
+                .then((subActivities) => {
+                    if (Array.isArray(subActivities) && subActivities.length > 0) {
+                        let subActivityHTML = '<ul>';
+                        subActivities.forEach((subActivity) => {
+                            subActivityHTML += `<li>
+                                <strong>${subActivity.name}</strong>
+                                <ul>
+                                    ${subActivity.files.map(file => `<li>${file}</li>`).join('')}
+                                </ul>
+                            </li>`;
+                        });
+                        subActivityHTML += '</ul>';
+                        Swal.fire({
+                            title: "Sub-Activities & Files",
+                            html: subActivityHTML,
+                            icon: "info",
+                            confirmButtonText: "Close",
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "No Sub-Activities Found",
+                            text: "This activity has no sub-activities.",
+                            icon: "warning",
+                            confirmButtonText: "OK",
+                        });
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching sub-activities:", error);
+                    Swal.fire({
+                        title: "Error",
+                        text: "Unable to fetch sub-activities. Please try again.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                });
         }
     });
-
+    
+    
+    
 
     // Add new ISO
     document.getElementById('addISO').addEventListener('click', () => {
@@ -116,11 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-
-document.querySelector("form").addEventListener("submit", function(e) {
-    // Jangan gunakan preventDefault kecuali Anda mengirim data secara manual
-});
-
 document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("auditTable");
 
@@ -142,4 +150,35 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+
+
+// Tambahkan logika untuk tombol Add New Activity
+document.getElementById("isoSelect").addEventListener("change", () => {
+    const selectedISO = document.getElementById("isoSelect").value;
+    const addActivityBtn = document.getElementById("addActivityBtn");
+    addActivityBtn.href = `/add?iso=${encodeURIComponent(selectedISO)}`;
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const addActivityBtn = document.getElementById("addActivityBtn");
+    if (addActivityBtn) {
+        addActivityBtn.addEventListener("btn", (event) => {
+            event.preventDefault();
+
+            const selectedISO = "ISO9001"; // Contoh ISO, pastikan ini sesuai logika Anda
+            if (!selectedISO) {
+                alert("No ISO selected. Please select an ISO first.");
+                return;
+            }
+
+            const url = `/add?iso=${encodeURIComponent(selectedISO)}`;
+            window.location.href = url;
+        });
+    } else {
+        console.error("Button with ID 'addActivityBtn' not found.");
+    }
+});
+
 
