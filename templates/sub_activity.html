@@ -12,46 +12,9 @@
         <img alt="SPIL logo" src="/static/1200px-Logospil.png"/>
         <h1>Sub Activities for {{ activity["activity"] }}</h1>
     </div>
-    <div class="container">
-        <div class="title">Sub Activities</div>
-        <div class="subtitle">Manage and Monitor Your Sub Activities</div>
-        <div class="projects">
-            <h2>Sub Activities</h2>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Sub Activity</th>
-                        <th>Uploaded At</th>
-                        <th>Files</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for sub in activity["sub_activities"] %}
-                    <tr>
-                        <td>{{ sub["id"] }}</td>
-                        <td>{{ sub["name"] }}</td>
-                        <td>{{ sub["uploaded_at"] }}</td>
-                        <td>
-                            {% for file in sub["files"] %}
-                            <a href="/static/files/{{ file | escape }}" download>{{ file }}</a>
-                            <button onclick="deleteFile('{{ sub['id'] }}', '{{ file }}')">🗑️</button><br>
-                            {% endfor %}
-                        </td>
-                        <td>
-                            <a href="/sub_activity/{{ sub['id'] }}/edit">
-                                <button>✏️ Update</button>
-                            </a>
-                            <button onclick="deleteSubActivity('{{ sub["id"] }}')">❌ Delete</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="projects">
-            <h2>Add Sub Activity</h2>
+    <div class="projects">
+        <h2>Add Sub Activity</h2>
+        <form id="addSubActivityForm">
             <table>
                 <thead>
                     <tr>
@@ -66,7 +29,23 @@
                             <input type="text" name="subActivityName" required>
                         </td>
                         <td>
-                            <input type="file" name="files" multiple>
+                            <!-- Drop Zone -->
+                            <div class="drop-zone" id="drop-zone">
+                                <p>Drag and drop files here or click to select files</p>
+                                <input type="file" name="files" id="file-input" multiple>
+                            </div>
+
+                            <!-- Table for selected files -->
+                            <table id="file-table" style="display:none; margin-top: 10px;">
+                                <thead>
+                                    <tr>
+                                        <th>File Name</th>
+                                        <th>Size</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="file-list"></tbody>
+                            </table>
                         </td>
                         <td>
                             <button type="submit">Add</button>
@@ -74,7 +53,8 @@
                     </tr>
                 </tbody>
             </table>
-        </div>
+        </form>
+    </div>
     </div>
 
     <script src="/static/js/script1.js"></script>

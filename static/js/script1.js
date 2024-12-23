@@ -1,53 +1,44 @@
-function showUpdateForm(subId) {
-    document.getElementById('updateForm').style.display = 'block';
-    const form = document.getElementById('updateSubActivityForm');
-    form.onsubmit = function (event) {
-        event.preventDefault();
+// Handle the file drop event
+const dropZone = document.getElementById("drop-zone");
+const fileInput = document.getElementById("file-input");
 
-        const updatedName = document.getElementById('updatedName').value;
-        const updatedDate = document.getElementById('updatedDate').value;
-        const newFiles = document.getElementById('newFiles').files;
+// Highlight drop zone when dragging over
+dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("drag-over");
+});
 
-        const formData = new FormData();
-        formData.append('updatedName', updatedName);
-        formData.append('updatedDate', updatedDate);
-        for (let file of newFiles) {
-            formData.append('files', file);
-        }
+// Remove highlight when drag leaves
+dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("drag-over");
+});
 
-        fetch(`/sub_activity/${subId}/update`, {
-            method: 'POST',
-            body: formData,
-        })
-            .then(response => response.json())
-            .then(result => {
-                if (result.status === 'success') {
-                    alert(result.message);
-                    window.location.href = `/activity/${subId}/sub_activities`;
-                } else {
-                    alert(result.message);
-                }
-            })
-            .catch(error => console.error('Error updating sub-activity:', error));
-    };
-}
+// Handle file drop
+dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("drag-over");
 
-function hideUpdateForm() {
-    document.getElementById('updateForm').style.display = 'none';
-}
+    const files = e.dataTransfer.files;
+    handleFiles(files);
+});
 
-function handleResponse(response) {
-    if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+// Handle file input change
+fileInput.addEventListener("change", () => {
+    const files = fileInput.files;
+    handleFiles(files);
+});
+
+// Display selected files (Optional, just for user feedback)
+function handleFiles(files) {
+    for (const file of files) {
+        console.log(file.name); // You can display this in the UI if needed
     }
-    return response.json();
 }
 
-
-// Handle form submission
+// Handle form submission with files
 document.getElementById("addSubActivityForm").addEventListener("submit", async (event) => {
     event.preventDefault(); // Prevent traditional form submission
-    
+
     const formData = new FormData(event.target); // Get form data
 
     // Send data to the server
@@ -60,18 +51,15 @@ document.getElementById("addSubActivityForm").addEventListener("submit", async (
         const result = await response.json();
 
         if (response.ok) {
-            // Show success popup
             Swal.fire({
                 title: 'Success!',
                 text: result.message,
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                // Redirect to index page after confirmation
-                window.location.href = '/sub_activity/<int:activity_id>';
+                window.location.reload(); // Reload page after successful submission
             });
         } else {
-            // Show error popup
             Swal.fire({
                 title: 'Error!',
                 text: result.message || 'An error occurred while adding the activity.',
@@ -89,144 +77,3 @@ document.getElementById("addSubActivityForm").addEventListener("submit", async (
         });
     }
 });
-
-// Handle adding a sub-activity
-document.getElementById("addSubActivityForm").addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const formData = new FormData(event.target);
-
-    try {
-        const response = await fetch(window.location.href, {
-            method: "POST",
-            body: formData,
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            Swal.fire({
-                title: "Success!",
-                text: result.message,
-                icon: "success",
-                confirmButtonText: "OK",
-            }).then(() => {
-                window.location.reload(); // Reload page to show updated data
-            });
-        } else {
-            Swal.fire({
-                title: "Error!",
-                text: result.message || "Failed to add sub-activity.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
-        }
-    } catch (error) {
-        Swal.fire({
-            title: "Error!",
-            text: "An error occurred while processing your request.",
-            icon: "error",
-            confirmButtonText: "OK",
-        });
-    }
-});
-
-// Delete a file from a sub-activity
-async function deleteFile(subActivityId, fileName) {
-    const confirmation = await Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, delete it!",
-    });
-
-    if (confirmation.isConfirmed) {
-        try {
-            const response = await fetch(`/sub_activity/${subActivityId}/delete_file`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ file: fileName }),
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                Swal.fire({
-                    title: "Deleted!",
-                    text: result.message,
-                    icon: "success",
-                    confirmButtonText: "OK",
-                }).then(() => {
-                    window.location.reload();
-                });
-            } else {
-                Swal.fire({
-                    title: "Error!",
-                    text: result.message || "Failed to delete file.",
-                    icon: "error",
-                    confirmButtonText: "OK",
-                });
-            }
-        } catch (error) {
-            Swal.fire({
-                title: "Error!",
-                text: "An error occurred while processing your request.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
-        }
-    }
-}
-
-// Delete a sub-activity
-async function deleteSubActivity(subActivityId) {
-    const confirmation = await Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, delete it!",
-    });
-
-    if (confirmation.isConfirmed) {
-        try {
-            const response = await fetch(`/sub_activity/${subActivityId}/delete`, {
-                method: "POST",
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                Swal.fire({
-                    title: "Deleted!",
-                    text: result.message,
-                    icon: "success",
-                    confirmButtonText: "OK",
-                }).then(() => {
-                    window.location.reload();
-                });
-            } else {
-                Swal.fire({
-                    title: "Error!",
-                    text: result.message || "Failed to delete sub-activity.",
-                    icon: "error",
-                    confirmButtonText: "OK",
-                });
-            }
-        } catch (error) {
-            Swal.fire({
-                title: "Error!",
-                text: "An error occurred while processing your request.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
-        }
-    }
-}
-
-function hideUpdateForm() {
-    document.getElementById("updateForm").style.display = "none";
-}
