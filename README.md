@@ -1,7 +1,7 @@
 # Alur Update Fitur ✨✨✨
 
 ## Jika Belum Pernah Clone
-'''
+```
 1. git clone
 2. git branch nama_fitur_baru
 3. git checkout nama_fitur_baru
@@ -9,10 +9,10 @@
 5. git push origin nama_fitur_baru
 6. request pull pada github
 
-'''
+```
 
 ## Jika Sudah Pernah Bergabung
-'''
+```
 1. git fetch
 2. git status
 3. jika tertinggal dari repository terbaru, maka
@@ -24,4 +24,4 @@
 9. git push origin nama-fitur
 10. request pull di github 
 
-'''
+```
