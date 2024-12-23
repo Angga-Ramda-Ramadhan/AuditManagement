@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>
                             <button class="delete-btn" data-id="${activity.id}">Delete</button>
                             <button class="view-btn" data-id="${activity.id}">View</button>
+                            <button class="edit-btn" data-id="${activity.id}">Edit</button>
                         </td>
                     `;
                     auditTableBody.appendChild(row);
@@ -144,6 +145,193 @@ document.addEventListener('DOMContentLoaded', () => {
                         text: "Unable to fetch sub-activities. Please try again later.",
                         icon: "error",
                         confirmButtonText: "OK",
+                    });
+                });
+        }
+    });
+
+    // Tambahkan event listener untuk tombol Edit
+    // Tambahkan event listener untuk tombol Edit
+    auditTableBody.addEventListener('click', (event) => {
+        if (event.target.classList.contains('edit-btn')) {
+            const activityId = event.target.getAttribute('data-id');
+            
+            fetch(`/activity/${activityId}`)
+                .then(response => response.json())
+                .then(activity => {
+                    // Bangun HTML Form untuk fitur tambahan
+                    const formHTML = `
+                        <form id="editForm">
+                            <label>
+                                Activity Name:
+                                <input type="text" name="activityName" value="${activity.activity}" required>
+                            </label>
+                            <label>
+                                Add Sub-Folder:
+                                <input type="text" name="subFolder">
+                            </label>
+                            <label>
+                                Upload File:
+                                <input type="file" name="file">
+                            </label>
+                            
+                            <hr>
+                            <label>
+                                Select Sub-Folder:
+                                <select id="subFolderSelect" name="subFolderSelect">
+                                    <option value="">-- Select Sub-Folder --</option>
+                                    ${activity.sub_activities.map(sub => `<option value="${sub.name}">${sub.name}</option>`).join('')}
+                                </select>
+                            </label>
+                            <label>
+                                Select File to Delete:
+                                <select id="fileSelect" name="fileSelect">
+                                    <option value="">-- Select File --</option>
+                                </select>
+                            </label>
+                            <button type="button" id="deleteFileBtn">Delete File</button>
+                            <button type="button" id="deleteSubFolderBtn">Delete Sub-Folder</button>
+                            
+                            <button type="submit">Save</button>
+                        </form>
+                    `;
+
+                    Swal.fire({
+                        title: "Edit Activity",
+                        html: formHTML,
+                        showConfirmButton: false,
+                    });
+
+                    const subFolderSelect = document.getElementById('subFolderSelect');
+                    const fileSelect = document.getElementById('fileSelect');
+
+                    // Event listener untuk memuat file dari sub-folder terpilih
+                    subFolderSelect.addEventListener('change', () => {
+                        const selectedSubFolder = subFolderSelect.value;
+                        const subActivity = activity.sub_activities.find(sub => sub.name === selectedSubFolder);
+
+                        fileSelect.innerHTML = '<option value="">-- Select File --</option>';
+                        if (subActivity && subActivity.files) {
+                            subActivity.files.forEach(file => {
+                                const option = document.createElement('option');
+                                option.value = file;
+                                option.textContent = file;
+                                fileSelect.appendChild(option);
+                            });
+                        }
+                    });
+
+                    // Event listener untuk menghapus file
+                    document.getElementById('deleteFileBtn').addEventListener('click', () => {
+                        const selectedSubFolder = subFolderSelect.value;
+                        const selectedFile = fileSelect.value;
+
+                        if (!selectedSubFolder || !selectedFile) {
+                            Swal.fire({
+                                title: "Error",
+                                text: "Please select a sub-folder and file to delete.",
+                                icon: "error",
+                                confirmButtonText: "OK",
+                            });
+                            return;
+                        }
+
+                        const formData = new FormData();
+                        formData.append('subFolder', selectedSubFolder);
+                        formData.append('deleteFile', selectedFile);
+
+                        fetch(`/activity/${activityId}/edit`, {
+                            method: 'POST',
+                            body: formData,
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            Swal.fire({
+                                title: "Success",
+                                text: data.message,
+                                icon: "success",
+                                confirmButtonText: "OK",
+                            }).then(() => location.reload());
+                        })
+                        .catch(error => {
+                            console.error("Error deleting file:", error);
+                            Swal.fire({
+                                title: "Error",
+                                text: "Failed to delete file.",
+                                icon: "error",
+                                confirmButtonText: "OK",
+                            });
+                        });
+                    });
+
+                    // Event listener untuk menghapus sub-folder
+                    document.getElementById('deleteSubFolderBtn').addEventListener('click', () => {
+                        const selectedSubFolder = subFolderSelect.value;
+
+                        if (!selectedSubFolder) {
+                            Swal.fire({
+                                title: "Error",
+                                text: "Please select a sub-folder to delete.",
+                                icon: "error",
+                                confirmButtonText: "OK",
+                            });
+                            return;
+                        }
+
+                        const formData = new FormData();
+                        formData.append('deleteSubFolder', selectedSubFolder);
+
+                        fetch(`/activity/${activityId}/edit`, {
+                            method: 'POST',
+                            body: formData,
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            Swal.fire({
+                                title: "Success",
+                                text: data.message,
+                                icon: "success",
+                                confirmButtonText: "OK",
+                            }).then(() => location.reload());
+                        })
+                        .catch(error => {
+                            console.error("Error deleting sub-folder:", error);
+                            Swal.fire({
+                                title: "Error",
+                                text: "Failed to delete sub-folder.",
+                                icon: "error",
+                                confirmButtonText: "OK",
+                            });
+                        });
+                    });
+
+                    // Event listener untuk menyimpan perubahan
+                    document.getElementById('editForm').addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        
+                        const formData = new FormData(e.target);
+                        fetch(`/activity/${activityId}/edit`, {
+                            method: 'POST',
+                            body: formData,
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            Swal.fire({
+                                title: "Success",
+                                text: data.message,
+                                icon: "success",
+                                confirmButtonText: "OK",
+                            }).then(() => location.reload());
+                        })
+                        .catch(error => {
+                            console.error("Error updating activity:", error);
+                            Swal.fire({
+                                title: "Error",
+                                text: "Failed to update activity.",
+                                icon: "error",
+                                confirmButtonText: "OK",
+                            });
+                        });
                     });
                 });
         }
