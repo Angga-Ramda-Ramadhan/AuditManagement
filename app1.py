@@ -145,5 +145,103 @@ def download_file(activity_id):
     return jsonify({"message": "File not found!"}), 404
 
 
+
+@app.route('/activity/<int:activity_id>', methods=['GET'])
+def get_activity(activity_id):
+    """Mengambil data aktivitas berdasarkan ID."""
+    activity = next((item for item in data_storage if item['id'] == activity_id), None)
+    if activity:
+        return jsonify(activity), 200
+    return jsonify({"message": "Activity not found!"}), 404
+
+@app.route('/activity/<int:activity_id>/edit', methods=['POST'])
+def edit_activity(activity_id):
+    """Mengedit aktivitas berdasarkan ID."""
+    activity = next((item for item in data_storage if item['id'] == activity_id), None)
+    if not activity:
+        return jsonify({"message": "Activity not found!"}), 404
+
+    try:
+        # Jika request berisi deleteSubFolder
+        delete_sub_folder = request.form.get('deleteSubFolder')
+        if delete_sub_folder:
+            activity['sub_activities'] = [
+                sub for sub in activity['sub_activities'] if sub['name'] != delete_sub_folder
+            ]
+            sub_folder_path = os.path.join('uploads', delete_sub_folder)
+            if os.path.exists(sub_folder_path):
+                shutil.rmtree(sub_folder_path)  # Hapus folder secara fisik
+            return jsonify({"message": "Sub-folder deleted successfully!"}), 200
+
+        # Jika request berisi deleteFile
+        delete_file = request.form.get('deleteFile')
+        if delete_file:
+            sub_folder_name = request.form.get('subFolder')
+            if sub_folder_name:
+                sub_folder = next(
+                    (sub for sub in activity['sub_activities'] if sub['name'] == sub_folder_name), None)
+                if sub_folder and delete_file in sub_folder['files']:
+                    sub_folder['files'].remove(delete_file)
+                    file_path = os.path.join('uploads', sub_folder_name, delete_file)
+                    if os.path.exists(file_path):
+                        os.remove(file_path)  # Hapus file secara fisik
+            return jsonify({"message": "File deleted successfully!"}), 200
+
+        # Edit nama aktivitas
+        new_name = request.form.get('activityName')
+        if new_name:
+            activity['activity'] = new_name
+
+        # Tambahkan sub-folder
+        sub_folder_name = request.form.get('subFolder')
+        if sub_folder_name:
+            new_sub_folder = {
+                "name": sub_folder_name,
+                "files": []
+            }
+            activity['sub_activities'].append(new_sub_folder)
+
+        # Tambahkan file ke sub-folder
+        if 'file' in request.files:
+            file = request.files['file']
+            if file.filename != '':
+                if sub_folder_name:  # Simpan file ke sub-folder jika ada
+                    sub_folder_path = os.path.join('uploads', sub_folder_name)
+                    os.makedirs(sub_folder_path, exist_ok=True)  # Buat sub-folder jika belum ada
+                    file_path = os.path.join(sub_folder_path, file.filename)
+                else:  # Simpan file ke folder utama jika tidak ada sub-folder
+                    file_path = os.path.join('uploads', file.filename)
+                
+                file.save(file_path)
+
+                # Tambahkan file ke sub-folder
+                if sub_folder_name:
+                    new_sub_folder['files'].append(file.filename)
+                else:
+                    activity['files'].append(file.filename)
+
+        return jsonify({"message": "Activity updated successfully!"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Error updating activity: {str(e)}"}), 500
+
+
+
+@app.route('/activity/<int:activity_id>/subactivity/<subactivity_name>/delete_file', methods=['POST'])
+def delete_subactivity_file(activity_id, subactivity_name):
+    """Menghapus file dari sub-folder."""
+    activity = next((item for item in data_storage if item['id'] == activity_id), None)
+    if not activity:
+        return jsonify({"message": "Activity not found!"}), 404
+
+    sub_activity = next((sub for sub in activity['sub_activities'] if sub['name'] == subactivity_name), None)
+    if not sub_activity:
+        return jsonify({"message": "Sub-activity not found!"}), 404
+
+    file_name = request.json.get('fileName')
+    if file_name in sub_activity['files']:
+        sub_activity['files'].remove(file_name)
+        return jsonify({"message": f"File {file_name} deleted successfully!"}), 200
+    return jsonify({"message": "File not found in sub-activity!"}), 404
+
 if __name__ == "__main__":
     app.run(debug=True)
