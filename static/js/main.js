@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+    // Add view functionality with download
     auditTableBody.addEventListener("click", (event) => {
         if (event.target.classList.contains("view-btn")) {
             const activityId = event.target.getAttribute("data-id");
@@ -70,7 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             subActivityHTML += `<li>
                                 <strong>${subActivity.name}</strong>
                                 <ul>
-                                    ${subActivity.files.map(file => `<li>${file}</li>`).join('')}
+                                    ${subActivity.files.map(file => `
+                                        <li>
+                                            ${file}
+                                            <button class="download-btn" data-id="${activityId}" data-file="${file}">Download</button>
+                                        </li>
+                                    `).join('')}
                                 </ul>
                             </li>`;
                         });
@@ -80,6 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             html: subActivityHTML,
                             icon: "info",
                             confirmButtonText: "Close",
+                        });
+
+                        // Add event listeners for download buttons
+                        document.querySelectorAll('.download-btn').forEach(button => {
+                            button.addEventListener('click', (event) => {
+                                const file = event.target.getAttribute('data-file');
+                                const activityId = event.target.getAttribute('data-id');
+                                const downloadUrl = `/activity/${activityId}/download?file=${encodeURIComponent(file)}`;
+                                
+                                // Trigger file download
+                                window.open(downloadUrl, '_blank');
+                            });
                         });
                     } else {
                         Swal.fire({
@@ -101,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         }
     });
-    
     
     
 
