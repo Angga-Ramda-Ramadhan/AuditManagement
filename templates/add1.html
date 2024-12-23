@@ -48,26 +48,46 @@
             const selectedISO = urlParams.get("iso");
             const subActivitiesContainer = document.getElementById("subActivitiesContainer");
             const addSubActivityButton = document.getElementById("addSubActivityButton");
-
+    
             // Tambahkan form sub-activity ketika tombol diklik
             addSubActivityButton.addEventListener("click", () => {
                 const subActivityIndex = subActivitiesContainer.children.length; // Hitung jumlah sub-activity
-
+    
                 // Buat form sub-activity baru
                 const subActivityForm = document.createElement("div");
                 subActivityForm.classList.add("sub-activity");
                 subActivityForm.innerHTML = `
                     <label for="subActivityName${subActivityIndex}" class="title">Sub-Activity Name:</label>
                     <input type="text" id="subActivityName${subActivityIndex}" name="sub_activities[${subActivityIndex}][name]" required class="input-field" placeholder="Enter sub-activity name"><br>
-
+    
                     <label for="subActivityFile${subActivityIndex}" class="title">Sub-Activity File:</label>
                     <input type="file" id="subActivityFile${subActivityIndex}" name="sub_activities[${subActivityIndex}][file]" multiple><br>
+    
+                    <!-- Tabel untuk menampilkan file -->
+                    <table id="file-table-${subActivityIndex}" style="display:none; margin-top: 10px;">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Size</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="file-list-${subActivityIndex}"></tbody>
+                    </table>
                 `;
-
-                // Tambahkan ke container
+    
+                // Tambahkan form sub-activity ke container
                 subActivitiesContainer.appendChild(subActivityForm);
+    
+                // Tambahkan event listener untuk file input
+                const fileInput = subActivityForm.querySelector(`#subActivityFile${subActivityIndex}`);
+                fileInput.addEventListener("change", () => {
+                    const files = fileInput.files;
+                    handleFiles(files, subActivityIndex); // Tangani file yang dipilih
+                });
             });
-
+    
+            // Cek jika parameter ISO tidak ada
             if (!selectedISO) {
                 Swal.fire({
                     title: 'Error!',
@@ -79,52 +99,52 @@
                 });
                 return; // Hentikan eksekusi jika ISO tidak ditemukan
             }
-
+    
             // Tampilkan ISO di halaman
             const isoTextElement = document.getElementById("selectedISOText");
             if (isoTextElement) {
                 isoTextElement.textContent = selectedISO;
             }
-
+    
             // Isi field hidden ISO
             const isoHiddenField = document.getElementById("iso");
             if (isoHiddenField) {
                 isoHiddenField.value = selectedISO;
             }
-
+    
             // Handle form submission
             const formElement = document.getElementById("addActivityForm");
             let isSubmitting = false;
-
+    
             formElement.addEventListener("submit", async (event) => {
                 if (isSubmitting) return;
-                isSubmitting=true;
-
+                isSubmitting = true;
+    
                 console.log("Form Submitted");
-                
-                event.preventDefault(); // Cegah form default submission
-
+    
+                event.preventDefault(); // Cegah pengiriman form default
+    
                 const formData = new FormData(event.target); // Ambil data form
-
-                // Loop through sub-activities to append each file
+    
+                // Loop melalui sub-activities dan tambahkan file
                 const subActivities = subActivitiesContainer.children;
                 for (let i = 0; i < subActivities.length; i++) {
                     const subActivityFiles = subActivities[i].querySelector('input[type="file"]');
                     if (subActivityFiles && subActivityFiles.files.length > 0) {
                         for (let file of subActivityFiles.files) {
-                            formData.append(`sub_activities[${i}][file]`, file); // Menambahkan file sub-activity ke formData
+                            formData.append(`sub_activities[${i}][file]`, file); // Menambahkan file ke formData
                         }
                     }
                 }
-
+    
                 try {
                     const response = await fetch('/add', {
                         method: 'POST',
                         body: formData
                     });
-
+    
                     const result = await response.json();
-
+    
                     if (response.ok) {
                         Swal.fire({
                             title: 'Success!',
@@ -150,9 +170,70 @@
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
+                } finally {
+                    isSubmitting = false; // Reset status pengiriman form
                 }
             });
+    
+            // Fungsi untuk menangani file yang dipilih dan menampilkannya di tabel
+            function handleFiles(files, index) {
+                const fileList = document.getElementById(`file-list-${index}`);
+                const fileTable = document.getElementById(`file-table-${index}`);
+                const fileInput = document.getElementById(`subActivityFile${index}`);
+    
+                // Tampilkan tabel jika ada file yang dipilih
+                fileTable.style.display = 'table';
+    
+                // Bersihkan daftar file sebelumnya
+                fileList.innerHTML = '';
+    
+                // Loop melalui file yang dipilih dan tambahkan ke tabel
+                Array.from(files).forEach((file) => {
+                    const row = document.createElement('tr');
+    
+                    // Kolom nama file
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = file.name;
+                    row.appendChild(nameCell);
+    
+                    // Kolom ukuran file
+                    const sizeCell = document.createElement('td');
+                    sizeCell.textContent = `${(file.size / 1024).toFixed(2)} KB`; // Ukuran dalam KB
+                    row.appendChild(sizeCell);
+    
+                    // Kolom aksi untuk menghapus file
+                    const actionCell = document.createElement('td');
+                    const removeButton = document.createElement('button');
+                    removeButton.textContent = 'Remove';
+                    removeButton.classList.add('btn');
+                    removeButton.addEventListener('click', () => {
+                        // Menghapus file dari input file
+                        const currentFiles = Array.from(fileInput.files);
+                        const updatedFiles = currentFiles.filter(f => f !== file);
+                        const dataTransfer = new DataTransfer();
+                        updatedFiles.forEach(f => dataTransfer.items.add(f));
+                        fileInput.files = dataTransfer.files;
+    
+                        // Menghapus baris dari tabel
+                        row.remove();
+                        
+                        // Jika tidak ada file yang tersisa, sembunyikan tabel
+                        if (fileInput.files.length === 0) {
+                            fileTable.style.display = 'none';
+                        }
+                    });
+                    actionCell.appendChild(removeButton);
+                    row.appendChild(actionCell);
+    
+                    // Menambahkan baris ke tabel
+                    fileList.appendChild(row);
+                });
+            }
         });
     </script>
+    
+    
+    
+    
 </body>
 </html>

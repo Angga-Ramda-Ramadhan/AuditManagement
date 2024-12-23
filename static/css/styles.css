@@ -123,17 +123,36 @@ button:hover {
     background-color: #45a049;
 }
 
-/* Drop Zone (Optional Feature) */
+/* Drop Zone Styling */
 .drop-zone {
     border: 2px dashed #ccc;
-    padding: 20px;
+    padding: 30px;
     text-align: center;
     margin: 20px 0;
     cursor: pointer;
+    background-color: #f9f9f9;
+    transition: background-color 0.3s ease;
 }
 
 .drop-zone:hover {
-    background-color: #f9f9f9;
+    background-color: #eaeaea;
+}
+
+.drop-zone p {
+    font-size: 16px;
+    color: #666;
+}
+
+.drop-zone input[type="file"] {
+    display: none; /* Hide the default file input */
+}
+
+.drop-zone.drag-over {
+    background-color: #d1e7dd; /* Color change on drag over */
+}
+
+.drop-zone.drag-over p {
+    color: #4caf50; /* Change text color when dragging over */
 }
 
 /* Buttons */
@@ -150,3 +169,4 @@ button:hover {
 .btn:hover {
     background-color: #45a049;
 }
+
