@@ -52,13 +52,28 @@
         </div>
         <div class="projects">
             <h2>Add Sub Activity</h2>
-            <form id="addSubActivityForm" method="POST" enctype="multipart/form-data">
-                <label for="subActivityName">Sub Activity Name:</label>
-                <input type="text" name="subActivityName" required><br>
-                <label for="files">Files:</label>
-                <input type="file" name="files" multiple><br>
-                <button type="submit">Add</button>
-            </form>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sub Activity Name</th>
+                        <th>Files</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <input type="text" name="subActivityName" required>
+                        </td>
+                        <td>
+                            <input type="file" name="files" multiple>
+                        </td>
+                        <td>
+                            <button type="submit">Add</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
