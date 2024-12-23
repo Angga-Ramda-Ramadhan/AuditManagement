@@ -53,39 +53,31 @@ def add_data():
                 "files": [],
                 "sub_activities": [],  # Menambahkan sub-activities
             }
-            # Tangani file yang diunggah
-            if 'file' in request.files:
-                uploaded_files = request.files.getlist('file')
-                print(f"Received files: {[file.filename for file in uploaded_files]}")  # Debugging log
-                for uploaded_file in uploaded_files:
-                    filename = uploaded_file.filename
-                    filepath = os.path.join('uploads', filename)
-                    uploaded_file.save(filepath)
-                    new_activity["files"].append(filename)
-            else:
-                print("No files found in request")  # Debugging log
+            # Debugging log
 
             # Tangani sub-activities
             sub_activities = []
             for key in request.form:
                 if key.startswith("sub_activities"):
-                    sub_activity_index = key.split("[")[1].split("]")[0]  # Ambil index sub-activity
+                    sub_activity_index = key.split("[")[1].split("]")[0]
                     sub_activity_name = request.form.get(f"sub_activities[{sub_activity_index}][name]")
                     sub_activity_files = request.files.getlist(f"sub_activities[{sub_activity_index}][file]")
+                    
                     sub_activity_data = {
                         "name": sub_activity_name,
                         "files": []
                     }
 
-                    # Simpan file sub-activity
                     for sub_file in sub_activity_files:
                         filename = sub_file.filename
                         filepath = os.path.join('uploads', filename)
-                        sub_file.save(filepath)
-                        sub_activity_data["files"].append(filename)
+                        
+                        # Cek apakah file sudah ada
+                        if filename not in sub_activity_data["files"]:
+                            sub_file.save(filepath)
+                            sub_activity_data["files"].append(filename)
 
                     sub_activities.append(sub_activity_data)
-
             # Menambahkan sub-activities ke aktivitas utama
             new_activity["sub_activities"] = sub_activities
             data_storage.append(new_activity)
@@ -142,6 +134,16 @@ def get_subactivities(activity_id):
         return jsonify(activity["sub_activities"])  # Kembalikan sub-activities yang ada
     else:
         return jsonify({"message": "No sub-activities found"}), 404
+
+@app.route('/activity/<int:activity_id>/download', methods=['GET'])
+def download_file(activity_id):
+    file_name = request.args.get('file')
+    file_path = os.path.join('uploads', file_name)
+    
+    if os.path.exists(file_path):
+        return send_file(file_path, as_attachment=True)
+    return jsonify({"message": "File not found!"}), 404
+
 
 if __name__ == "__main__":
     app.run(debug=True)

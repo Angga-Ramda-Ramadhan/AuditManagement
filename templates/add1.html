@@ -94,7 +94,14 @@
 
             // Handle form submission
             const formElement = document.getElementById("addActivityForm");
+            let isSubmitting = false;
+
             formElement.addEventListener("submit", async (event) => {
+                if (isSubmitting) return;
+                isSubmitting=true;
+
+                console.log("Form Submitted");
+                
                 event.preventDefault(); // Cegah form default submission
 
                 const formData = new FormData(event.target); // Ambil data form
