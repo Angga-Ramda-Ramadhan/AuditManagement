@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, send_file
 import os
 from datetime import datetime
 import io
+from werkzeug.utils import secure_filename
 import zipfile
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -219,6 +220,28 @@ def edit_activity(activity_id):
                     new_sub_folder['files'].append(file.filename)
                 else:
                     activity['files'].append(file.filename)
+        
+        # Jika request berisi addToSubFolder
+        add_to_sub_folder = request.form.get('addToSubFolder')
+        if add_to_sub_folder:
+            sub_folder = next(
+                (sub for sub in activity['sub_activities'] if sub['name'] == add_to_sub_folder), None
+            )
+            if sub_folder:
+                sub_folder_path = os.path.join('uploads', add_to_sub_folder)
+                os.makedirs(sub_folder_path, exist_ok=True)
+
+                uploaded_files = request.files.getlist("files")
+                for file in uploaded_files:
+                    if file.filename != '':
+                        filename = secure_filename(file.filename)
+                        file_path = os.path.join(sub_folder_path, filename)
+                        file.save(file_path)
+                        sub_folder['files'].append(filename)
+
+                return jsonify({"message": "Files added successfully!"}), 200
+            else:
+                return jsonify({"message": "Sub-folder not found!"}), 404
 
         return jsonify({"message": "Activity updated successfully!"}), 200
     except Exception as e:

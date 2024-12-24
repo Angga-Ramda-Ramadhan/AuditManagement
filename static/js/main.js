@@ -180,7 +180,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 Select Sub-Folder:
                                 <select id="subFolderSelect" name="subFolderSelect">
                                     <option value="">-- Select Sub-Folder --</option>
-                                    ${activity.sub_activities.map(sub => `<option value="${sub.name}">${sub.name}</option>`).join('')}
+                                    ${activity.sub_activities
+                                        .map(
+                                            (sub) => `<option value="${sub.name}">${sub.name}</option>`
+                                        )
+                                        .join("")}
                                 </select>
                             </label>
                             <label>
@@ -191,7 +195,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             </label>
                             <button type="button" id="deleteFileBtn">Delete File</button>
                             <button type="button" id="deleteSubFolderBtn">Delete Sub-Folder</button>
-                            
+                            <hr>
+                            <label>
+                                Add Files to Sub-Folder:
+                                <input type="file" id="addFilesInput" name="addFilesInput" multiple>
+                            </label>
+                            <button type="button" id="addFilesBtn">Add Files</button>
                             <button type="submit">Save</button>
                         </form>
                     `;
@@ -204,6 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const subFolderSelect = document.getElementById('subFolderSelect');
                     const fileSelect = document.getElementById('fileSelect');
+                    const addFilesInput = document.getElementById("addFilesInput");
+
 
                     // Event listener untuk memuat file dari sub-folder terpilih
                     subFolderSelect.addEventListener('change', () => {
@@ -304,6 +315,48 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                         });
                     });
+                    // Event listener untuk mengunggah file baru ke sub-folder
+                    document.getElementById("addFilesBtn").addEventListener("click", () => {
+                        const selectedSubFolder = subFolderSelect.value;
+                        const files = addFilesInput.files;
+
+                        if (!selectedSubFolder || files.length === 0) {
+                            Swal.fire({
+                                title: "Error",
+                                text: "Please select a sub-folder and choose files to upload.",
+                                icon: "error",
+                                confirmButtonText: "OK",
+                            });
+                            return;
+                        }
+
+                        const formData = new FormData();
+                        formData.append("addToSubFolder", selectedSubFolder);
+                        Array.from(files).forEach((file) => formData.append("files", file));
+
+                        fetch(`/activity/${activityId}/edit`, {
+                            method: "POST",
+                            body: formData,
+                        })
+                            .then((response) => response.json())
+                            .then((data) => {
+                                Swal.fire({
+                                    title: "Success",
+                                    text: data.message,
+                                    icon: "success",
+                                    confirmButtonText: "OK",
+                                }).then(() => location.reload());
+                            })
+                            .catch((error) => {
+                                console.error("Error adding files:", error);
+                                Swal.fire({
+                                    title: "Error",
+                                    text: "Failed to add files.",
+                                    icon: "error",
+                                    confirmButtonText: "OK",
+                                });
+                            });
+                    });
 
                     // Event listener untuk menyimpan perubahan
                     document.getElementById('editForm').addEventListener('submit', (e) => {
@@ -333,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                         });
                     });
+                    
                 });
         }
     });
