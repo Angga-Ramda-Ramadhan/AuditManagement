@@ -5,9 +5,10 @@
 1. git clone
 2. git branch nama_fitur_baru
 3. git checkout nama_fitur_baru
-4. git commit -m "desc commit"
-5. git push origin nama_fitur_baru
-6. request pull pada github
+4. git add . (jika ingin menambahkan semua file dan folder)
+5. git commit -m "desc commit"
+6. git push origin nama_fitur_baru
+7. request pull pada github
 
 ```
 
