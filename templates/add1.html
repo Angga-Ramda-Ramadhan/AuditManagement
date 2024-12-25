@@ -27,7 +27,7 @@
                 <input type="hidden" id="iso" name="iso" value="{{ selected_iso }}">
         
                 <label for="description" class="title">Description:</label>
-                <textarea id="description" name="description" required class="input-field" placeholder="Enter a brief description"></textarea><br>
+                <textarea id="description" name="description" required class="input-field" placeholder="Description will be generated automatically" readonly></textarea><br>
         
                 <!-- Tombol untuk menambahkan Sub-Activity -->
                 <button type="button" id="addSubActivityButton" class="btn">Add Sub-Activity</button>
@@ -43,169 +43,198 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const selectedISO = urlParams.get("iso");
-    const subActivitiesContainer = document.getElementById("subActivitiesContainer");
-    const addSubActivityButton = document.getElementById("addSubActivityButton");
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedISO = urlParams.get("iso");
+            const subActivitiesContainer = document.getElementById("subActivitiesContainer");
+            const addSubActivityButton = document.getElementById("addSubActivityButton");
 
-    addSubActivityButton.addEventListener("click", () => {
-        const subActivityIndex = subActivitiesContainer.children.length;
+            addSubActivityButton.addEventListener("click", () => {
+                const subActivityIndex = subActivitiesContainer.children.length;
 
-        const subActivityForm = document.createElement("div");
-        subActivityForm.classList.add("sub-activity");
-        subActivityForm.innerHTML = `
-            <label for="subActivityName${subActivityIndex}" class="title">Sub-Activity Name:</label>
-            <input type="text" id="subActivityName${subActivityIndex}" name="sub_activities[${subActivityIndex}][name]" required class="input-field" placeholder="Enter sub-activity name"><br>
+                const subActivityForm = document.createElement("div");
+                subActivityForm.classList.add("sub-activity");
+                subActivityForm.innerHTML = `
+                    <label for="subActivityName${subActivityIndex}" class="title">Sub-Activity Name:</label>
+                    <input type="text" id="subActivityName${subActivityIndex}" name="sub_activities[${subActivityIndex}][name]" required class="input-field" placeholder="Enter sub-activity name"><br>
 
-            <label for="subActivityFile${subActivityIndex}" class="title">Sub-Activity File:</label>
-            <input type="file" id="subActivityFile${subActivityIndex}" name="sub_activities[${subActivityIndex}][file]" multiple><br>
+                    <label for="subActivityFile${subActivityIndex}" class="title">Sub-Activity File:</label>
+                    <input type="file" id="subActivityFile${subActivityIndex}" name="sub_activities[${subActivityIndex}][file]" multiple><br>
 
-            <table id="file-table-${subActivityIndex}" style="display:none; margin-top: 10px;">
-                <thead>
-                    <tr>
-                        <th>File Name</th>
-                        <th>Size</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="file-list-${subActivityIndex}"></tbody>
-            </table>
-        `;
+                    <table id="file-table-${subActivityIndex}" style="display:none; margin-top: 10px;">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Size</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="file-list-${subActivityIndex}"></tbody>
+                    </table>
+                `;
 
-        subActivitiesContainer.appendChild(subActivityForm);
+                subActivitiesContainer.appendChild(subActivityForm);
 
-        const fileInput = subActivityForm.querySelector(`#subActivityFile${subActivityIndex}`);
-        const dataTransfer = new DataTransfer(); // Create a DataTransfer object for managing files
+                const fileInput = subActivityForm.querySelector(`#subActivityFile${subActivityIndex}`);
+                const dataTransfer = new DataTransfer(); // Create a DataTransfer object for managing files
 
-        fileInput.addEventListener("change", () => {
-            handleFiles(fileInput.files, subActivityIndex, fileInput, dataTransfer);
-        });
-    });
-
-    if (!selectedISO) {
-        Swal.fire({
-            title: 'Error!',
-            text: 'No ISO selected. Redirecting to the main page.',
-            icon: 'error',
-            confirmButtonText: 'OK'
-        }).then(() => {
-            window.location.href = '/';
-        });
-        return;
-    }
-
-    const isoTextElement = document.getElementById("selectedISOText");
-    if (isoTextElement) isoTextElement.textContent = selectedISO;
-
-    const isoHiddenField = document.getElementById("iso");
-    if (isoHiddenField) isoHiddenField.value = selectedISO;
-
-    const formElement = document.getElementById("addActivityForm");
-    let isSubmitting = false;
-
-    formElement.addEventListener("submit", async (event) => {
-        if (isSubmitting) return;
-        isSubmitting = true;
-
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        const subActivities = subActivitiesContainer.children;
-        for (let i = 0; i < subActivities.length; i++) {
-            const subActivityFiles = subActivities[i].querySelector('input[type="file"]');
-            if (subActivityFiles && subActivityFiles.files.length > 0) {
-                for (let file of subActivityFiles.files) {
-                    formData.append(`sub_activities[${i}][file]`, file);
-                }
-            }
-        }
-
-        try {
-            const response = await fetch('/add', {
-                method: 'POST',
-                body: formData
+                fileInput.addEventListener("change", () => {
+                    handleFiles(fileInput.files, subActivityIndex, fileInput, dataTransfer);
+                });
             });
 
-            const result = await response.json();
-
-            if (response.ok) {
+            if (!selectedISO) {
                 Swal.fire({
-                    title: 'Success!',
-                    text: result.message,
-                    icon: 'success',
+                    title: 'Error!',
+                    text: 'No ISO selected. Redirecting to the main page.',
+                    icon: 'error',
                     confirmButtonText: 'OK'
                 }).then(() => {
                     window.location.href = '/';
                 });
-            } else {
-                Swal.fire({
-                    title: 'Error!',
-                    text: result.message || 'An error occurred while adding the activity.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
+                return;
             }
-        } catch (error) {
-            console.error("Error submitting form:", error);
-            Swal.fire({
-                title: 'Error!',
-                text: 'Something went wrong! Please try again.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        } finally {
-            isSubmitting = false;
-        }
-    });
 
-    function handleFiles(files, index, fileInput, dataTransfer) {
-        const fileList = document.getElementById(`file-list-${index}`);
-        const fileTable = document.getElementById(`file-table-${index}`);
-        fileTable.style.display = 'table';
+            const isoTextElement = document.getElementById("selectedISOText");
+            if (isoTextElement) isoTextElement.textContent = selectedISO;
 
-        // Add new files to the DataTransfer object
-        Array.from(files).forEach((file) => {
-            const isDuplicate = [...dataTransfer.files].some(existingFile => existingFile.name === file.name);
-            if (!isDuplicate) {
-                dataTransfer.items.add(file);
+            const isoHiddenField = document.getElementById("iso");
+            if (isoHiddenField) isoHiddenField.value = selectedISO;
 
-                const row = document.createElement('tr');
+            const formElement = document.getElementById("addActivityForm");
+            let isSubmitting = false;
 
-                const nameCell = document.createElement('td');
-                nameCell.textContent = file.name;
-                row.appendChild(nameCell);
+            formElement.addEventListener("submit", async (event) => {
+                if (isSubmitting) return;
+                isSubmitting = true;
 
-                const sizeCell = document.createElement('td');
-                sizeCell.textContent = `${(file.size / 1024).toFixed(2)} KB`;
-                row.appendChild(sizeCell);
-
-                const actionCell = document.createElement('td');
-                const removeButton = document.createElement('button');
-                removeButton.textContent = 'Remove';
-                removeButton.classList.add('btn');
-                removeButton.addEventListener('click', () => {
-                    row.remove();
-
-                    // Remove file from DataTransfer
-                    const indexToRemove = [...dataTransfer.files].findIndex(f => f.name === file.name);
-                    if (indexToRemove !== -1) {
-                        dataTransfer.items.remove(indexToRemove);
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const subActivities = subActivitiesContainer.children;
+                for (let i = 0; i < subActivities.length; i++) {
+                    const subActivityFiles = subActivities[i].querySelector('input[type="file"]');
+                    if (subActivityFiles && subActivityFiles.files.length > 0) {
+                        for (let file of subActivityFiles.files) {
+                            formData.append(`sub_activities[${i}][file]`, file);
+                        }
                     }
+                }
 
-                    fileInput.files = dataTransfer.files;
+                try {
+                    const response = await fetch('/add', {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                    if (fileList.children.length === 0) fileTable.style.display = 'none';
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: result.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = '/';
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: result.message || 'An error occurred while adding the activity.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error submitting form:", error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Something went wrong! Please try again.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                } finally {
+                    isSubmitting = false;
+                }
+            });
+
+            function handleFiles(files, index, fileInput, dataTransfer) {
+                const fileList = document.getElementById(`file-list-${index}`);
+                const fileTable = document.getElementById(`file-table-${index}`);
+                fileTable.style.display = 'table';
+
+                // Add new files to the DataTransfer object
+                Array.from(files).forEach((file) => {
+                    const isDuplicate = [...dataTransfer.files].some(existingFile => existingFile.name === file.name);
+                    if (!isDuplicate) {
+                        dataTransfer.items.add(file);
+
+                        const row = document.createElement('tr');
+
+                        const nameCell = document.createElement('td');
+                        nameCell.textContent = file.name;
+                        row.appendChild(nameCell);
+
+                        const sizeCell = document.createElement('td');
+                        sizeCell.textContent = `${(file.size / 1024).toFixed(2)} KB`;
+                        row.appendChild(sizeCell);
+
+                        const actionCell = document.createElement('td');
+                        const removeButton = document.createElement('button');
+                        removeButton.textContent = 'Remove';
+                        removeButton.classList.add('btn');
+                        removeButton.addEventListener('click', () => {
+                            row.remove();
+
+                            // Remove file from DataTransfer
+                            const indexToRemove = [...dataTransfer.files].findIndex(f => f.name === file.name);
+                            if (indexToRemove !== -1) {
+                                dataTransfer.items.remove(indexToRemove);
+                            }
+
+                            fileInput.files = dataTransfer.files;
+
+                            if (fileList.children.length === 0) fileTable.style.display = 'none';
+                        });
+                        actionCell.appendChild(removeButton);
+                        row.appendChild(actionCell);
+
+                        fileList.appendChild(row);
+                    }
                 });
-                actionCell.appendChild(removeButton);
-                row.appendChild(actionCell);
 
-                fileList.appendChild(row);
+                // Update file input to reflect the DataTransfer object
+                fileInput.files = dataTransfer.files;
             }
         });
+        document.addEventListener("DOMContentLoaded", () => {
+            const subActivitiesContainer = document.getElementById("subActivitiesContainer");
 
-        // Update file input to reflect the DataTransfer object
-        fileInput.files = dataTransfer.files;
-    }
-});
+            function updateDescription() {
+                let description = "";
+                const subActivities = subActivitiesContainer.children;
+
+                for (let i = 0; i < subActivities.length; i++) {
+                    const subActivityName = subActivities[i].querySelector(`input[name="sub_activities[${i}][name]"]`).value;
+                    const subActivityFiles = subActivities[i].querySelector(`input[name="sub_activities[${i}][file]"]`).files;
+                    
+                    if (subActivityFiles.length > 0) {
+                        description += `${subActivityName}:\n`;
+                        for (let j = 0; j < subActivityFiles.length; j++) {
+                            description += `${j + 1}. ${subActivityFiles[j].name}\n`;
+                        }
+                        description += "\n";
+                    }
+                }
+
+                document.getElementById("description").value = description.trim();
+            }
+
+            subActivitiesContainer.addEventListener("change", updateDescription);
+            document.getElementById("addSubActivityButton").addEventListener("click", () => {
+                setTimeout(updateDescription, 100); // Allow new sub-activity to be added before updating description
+            });
+        });
+
 
 </script>
 

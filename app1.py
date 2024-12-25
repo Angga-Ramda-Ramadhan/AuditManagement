@@ -33,6 +33,7 @@ def add_iso():
 @app.route('/get_data/<iso>', methods=['GET'])
 def get_data(iso):
     filtered_data = [item for item in data_storage if item['iso'] == iso]
+    print(filtered_data)
     return jsonify(filtered_data)
 
 @app.route('/add', methods=['GET', 'POST'])
@@ -45,19 +46,8 @@ def add_data():
 
     elif request.method == 'POST':
         try:
-            new_activity = {
-                "id": len(data_storage) + 1,
-                "activity": request.form['activity'],
-                "iso": request.form['iso'],
-                "date": datetime.now().strftime('%Y-%m-%d'),  # Tanggal otomatis
-                "description": request.form['description'],
-                "files": [],
-                "sub_activities": [],  # Menambahkan sub-activities
-            }
-            # Debugging log
-
-            # Tangani sub-activities
             sub_activities = []
+            description = ""
             for key in request.form:
                 if key.startswith("sub_activities"):
                     sub_activity_index = key.split("[")[1].split("]")[0]
@@ -69,24 +59,36 @@ def add_data():
                         "files": []
                     }
 
-                    for sub_file in sub_activity_files:
+                    description += f"{sub_activity_name}:\n"
+                    for idx, sub_file in enumerate(sub_activity_files):
                         filename = sub_file.filename
                         filepath = os.path.join('uploads', filename)
                         
-                        # Cek apakah file sudah ada
                         if filename not in sub_activity_data["files"]:
                             sub_file.save(filepath)
                             sub_activity_data["files"].append(filename)
+                            description += f"{idx + 1}. {filename}\n"
 
                     sub_activities.append(sub_activity_data)
-            # Menambahkan sub-activities ke aktivitas utama
-            new_activity["sub_activities"] = sub_activities
+                    description += "\n"
+
+            new_activity = {
+                "id": len(data_storage) + 1,
+                "activity": request.form['activity'],
+                "iso": request.form['iso'],
+                "date": datetime.now().strftime('%Y-%m-%d'),  # Tanggal otomatis
+                "description": description.strip(),  # Menggunakan deskripsi yang dihasilkan
+                "files": [],
+                "sub_activities": sub_activities
+            }
+
             data_storage.append(new_activity)
 
             return jsonify({"message": "Activity added successfully!"}), 201
         except KeyError as e:
             return f"KeyError: Missing form field {str(e)}", 400
     return render_template('add1.html')
+
 
 @app.route('/activity/<int:activity_id>/delete', methods=['POST'])
 def delete_activity(activity_id):
@@ -174,6 +176,7 @@ def edit_activity(activity_id):
                 shutil.rmtree(sub_folder_path)  # Hapus folder secara fisik
             return jsonify({"message": "Sub-folder deleted successfully!"}), 200
 
+
         # Jika request berisi deleteFile
         delete_file = request.form.get('deleteFile')
         if delete_file:
@@ -238,12 +241,11 @@ def edit_activity(activity_id):
                         file_path = os.path.join(sub_folder_path, filename)
                         file.save(file_path)
                         sub_folder['files'].append(filename)
-
-                return jsonify({"message": "Files added successfully!"}), 200
             else:
                 return jsonify({"message": "Sub-folder not found!"}), 404
 
-        return jsonify({"message": "Activity updated successfully!"}), 200
+        return jsonify({
+            "message": "Activity updated successfully!"}), 200
     except Exception as e:
         return jsonify({"message": f"Error updating activity: {str(e)}"}), 500
 
@@ -265,6 +267,7 @@ def delete_subactivity_file(activity_id, subactivity_name):
         sub_activity['files'].remove(file_name)
         return jsonify({"message": f"File {file_name} deleted successfully!"}), 200
     return jsonify({"message": "File not found in sub-activity!"}), 404
+
 
 if __name__ == "__main__":
     app.run(debug=True)
