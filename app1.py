@@ -4,7 +4,8 @@ from datetime import datetime
 import io
 from werkzeug.utils import secure_filename
 import zipfile
-
+import shutil
+from urllib.parse import unquote
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
 iso_list = ["ISO 45001", "ISO 9001", "ISO 9003"]
@@ -140,7 +141,7 @@ def get_subactivities(activity_id):
 
 @app.route('/activity/<int:activity_id>/download', methods=['GET'])
 def download_file(activity_id):
-    file_name = request.args.get('file')
+    file_name = unquote(request.args.get('file'))
     file_path = os.path.join('uploads', file_name)
     
     if os.path.exists(file_path):
@@ -223,7 +224,9 @@ def edit_activity(activity_id):
                     new_sub_folder['files'].append(file.filename)
                 else:
                     activity['files'].append(file.filename)
-        
+
+
+
         # Jika request berisi addToSubFolder
         add_to_sub_folder = request.form.get('addToSubFolder')
         if add_to_sub_folder:
@@ -231,7 +234,7 @@ def edit_activity(activity_id):
                 (sub for sub in activity['sub_activities'] if sub['name'] == add_to_sub_folder), None
             )
             if sub_folder:
-                sub_folder_path = os.path.join('uploads', add_to_sub_folder)
+                sub_folder_path = os.path.join('uploads')
                 os.makedirs(sub_folder_path, exist_ok=True)
 
                 uploaded_files = request.files.getlist("files")
