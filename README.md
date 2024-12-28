@@ -21,8 +21,11 @@
 5. git status (untuk check apakah sudah terupdate)
 6. git branch nama_fitur
 7. git checkout nama_fitur
-8. git commit -m 'desc'
-9. git push origin nama-fitur
-10. request pull di github 
+8. git add . (untuk semua folder dan file)
+9. git commit -m 'desc'
+10. git push origin nama-fitur
+11. request pull di github 
 
 ```
+
+## Dont Forget to Swap on Project Kanban
