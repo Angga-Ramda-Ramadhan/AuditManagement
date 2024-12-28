@@ -210,7 +210,7 @@ def edit_activity(activity_id):
             file = request.files['file']
             if file.filename != '':
                 if sub_folder_name:  # Simpan file ke sub-folder jika ada
-                    sub_folder_path = os.path.join('uploads', sub_folder_name)
+                    sub_folder_path = os.path.join('uploads')
                     os.makedirs(sub_folder_path, exist_ok=True)  # Buat sub-folder jika belum ada
                     file_path = os.path.join(sub_folder_path, file.filename)
                 else:  # Simpan file ke folder utama jika tidak ada sub-folder
