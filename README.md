@@ -29,3 +29,7 @@
 ```
 
 ## Dont Forget to Swap on Project Kanban
+```
+Jangan Lupa update progress project
+
+```
