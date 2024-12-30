@@ -479,3 +479,41 @@ document.addEventListener('DOMContentLoaded', () => {
         addActivityBtn.href = `/add?iso=${encodeURIComponent(selectedISO)}`;
     });
 });
+
+
+//Update fitur search
+document.getElementById("searchBtn").addEventListener("click", () => {
+    const query = document.getElementById("searchInput").value.trim();
+
+    if (query) {
+        fetch(`/search?query=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                const auditTableBody = document.querySelector("#auditTable tbody");
+                auditTableBody.innerHTML = ""; // Clear the table
+                
+                if (data.length > 0) {
+                    data.forEach(activity => {
+                        auditTableBody.innerHTML += `
+                            <tr>
+                                <td>${activity.id}</td>
+                                <td>${activity.activity}</td>
+                                <td>${activity.date}</td>
+                                <td>${activity.description}</td>
+                                <td>
+                                    <button class="delete-btn" data-id="${activity.id}">Delete</button>
+                                    <button class="view-btn" data-id="${activity.id}">View</button>
+                                    <button class="edit-btn" data-id="${activity.id}">Edit</button>  
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    auditTableBody.innerHTML = `<tr><td colspan="5">No results found</td></tr>`;
+                }
+            })
+            .catch(error => {
+                console.error("Error searching files:", error);
+            });
+    }
+});
