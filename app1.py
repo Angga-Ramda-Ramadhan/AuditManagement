@@ -272,5 +272,35 @@ def delete_subactivity_file(activity_id, subactivity_name):
     return jsonify({"message": "File not found in sub-activity!"}), 404
 
 
+
+#Update Fitur Search Bar
+
+@app.route('/search', methods=['GET'])
+def search_file():
+    """Search for activities containing a specific file."""
+    query = request.args.get('query', '').lower()
+    if not query:
+        return jsonify([])
+
+    results = []
+    for activity in data_storage:
+        for sub_activity in activity.get('sub_activities', []):
+            matching_files = [file for file in sub_activity.get('files', []) if query in file.lower()]
+            if matching_files:
+                results.append({
+                    "id": activity["id"],
+                    "activity": activity["activity"],
+                    "date": activity["date"],
+                    "description": activity["description"]
+                })
+                break  # Stop searching sub-activities once a match is found
+
+    return jsonify(results)
+
+
+
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)
