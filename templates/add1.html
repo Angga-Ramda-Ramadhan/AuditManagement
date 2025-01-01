@@ -3,39 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/styles1.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Add Activity</title>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <img src="/static/1200px-Logospil.png" alt="SPIL Logo">
-            <h1>Add New Activity</h1>
+    <div class="app-container">
+        <header class="navbar">
+            <div class="logo-container">
+                <img src="/static/1200px-Logospil.png" alt="SPIL Logo" class="logo">
+                <h1 class="app-title">Add New Activity</h1>
+            </div>
         </header>
 
-        <section class="projects">
-            <h2>Add a New Activity</h2>
-            <form id="addActivityForm" action="/add" method="POST" enctype="multipart/form-data">
+        <section class="form-section">
+            <h2 class="section-title">Add a New Activity</h2>
+            <form id="addActivityForm" action="/add" method="POST" enctype="multipart/form-data" class="activity-form">
                 <!-- Tampilkan ISO yang dipilih -->
-                <p><strong>Selected ISO:</strong> <span id="selectedISOText"></span></p>
-        
-                <label for="activity" class="title">Activity:</label>
-                <input type="text" id="activity" name="activity" required class="input-field" placeholder="Enter activity name"><br>
-        
-                <!-- Field hidden ISO -->
+                <p><strong>Selected ISO:</strong> <span id="selectedISOText" class="selected-iso"></span></p>
+
+                <label for="activity" class="label">Activity:</label>
+                <input type="text" id="activity" name="activity" required class="input" placeholder="Enter activity name">
+
                 <input type="hidden" id="iso" name="iso" value="{{ selected_iso }}">
-        
-                <label for="description" class="title">Description:</label>
-                <textarea id="description" name="description" required class="input-field" placeholder="Description will be generated automatically" readonly></textarea><br>
-        
-                <!-- Tombol untuk menambahkan Sub-Activity -->
+
+                <label for="description" class="label">Description:</label>
+                <textarea id="description" name="description" required class="input" placeholder="Description will be generated automatically" readonly></textarea>
+
                 <button type="button" id="addSubActivityButton" class="btn">Add Sub-Activity</button>
-        
-                <!-- Container untuk menampilkan form sub-activity -->
-                <div id="subActivitiesContainer"></div>
-        
-                <button type="submit" class="btn">Add</button>
+
+                <div id="subActivitiesContainer" class="sub-activities-container"></div>
+
+                <button type="submit" class="btn submit-btn">Add</button>
             </form>
         </section>
         

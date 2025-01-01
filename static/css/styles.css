@@ -100,9 +100,43 @@ table tbody tr:hover {
     background-color: #f1f1f1;
 }
 
+/* Modern and Compact Select Box Styling with V Arrow */
+#isoSelect {
+    width: 100%;
+    max-width: 120px; /* Lebar maksimal lebih kecil */
+    padding: 8px; /* Padding lebih kecil untuk tampilan compact */
+    font-size: 14px; /* Font lebih kecil */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #333;
+    appearance: none; /* Menghilangkan panah bawaan */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 10'%3E%3Cpath d='M0 0L10 10L20 0' fill='%234CAF50'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+}
+
+/* Hover and Focus State */
+#isoSelect:hover, #isoSelect:focus {
+    border-color: #007BFF;
+    box-shadow: 0 3px 6px rgba(0, 123, 255, 0.2);
+    outline: none;
+    cursor: pointer;
+}
+
+/* Responsiveness */
+@media (max-width: 600px) {
+    #isoSelect {
+        max-width: 100%; /* Penuhi lebar layar kecil */
+    }
+}
+
 /* Input and Button Styles */
 input[type="text"], input[type="file"] {
-    width: 100%;
+    width: 20%;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
