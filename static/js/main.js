@@ -161,106 +161,87 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(activity => {
                     // Bangun HTML Form untuk fitur tambahan
                     const formHTML = `
-                    <form id="editForm" style="font-family: Arial, sans-serif; line-height: 1.5;">
-                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                            <tbody>
-                                <tr>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <label for="activityName" style="font-weight: bold;">Activity Name:</label>
-                                    </td>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <input type="text" id="activityName" name="activityName" value="${activity.activity}" 
-                                            required 
-                                            style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <label for="subFolder" style="font-weight: bold;">Add Sub-Folder:</label>
-                                    </td>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <input type="text" id="subFolder" name="subFolder" 
-                                            style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <label for="file" style="font-weight: bold;">Upload File:</label>
-                                    </td>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <input type="file" id="file" name="file">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <hr>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <label for="subFolderSelect" style="font-weight: bold;">Select Sub-Folder:</label>
-                                    </td>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <select id="subFolderSelect" name="subFolderSelect" 
-                                            style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                                            <option value="">-- Select Sub-Folder --</option>
-                                            ${activity.sub_activities
-                                                .map((sub) => `<option value="${sub.name}">${sub.name}</option>`)
-                                                .join("")}
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <label for="fileSelect" style="font-weight: bold;">Select File to Delete:</label>
-                                    </td>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <select id="fileSelect" name="fileSelect" 
-                                            style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                                            <option value="">-- Select File --</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">
-                                        <button type="button" id="deleteFileBtn" 
-                                            style="padding: 8px 12px; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                            Delete File
-                                        </button>
-                                        <button type="button" id="deleteSubFolderBtn" 
-                                            style="padding: 8px 12px; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                            Delete Sub-Folder
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <hr>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <label for="addFilesInput" style="font-weight: bold;">Add Files to Sub-Folder:</label>
-                                    </td>
-                                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                        <input type="file" id="addFilesInput" name="addFilesInput" multiple>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" style="padding: 10px; text-align: right;">
-                                        <button type="button" id="addFilesBtn" 
-                                            style="padding: 8px 12px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                            Add Files
-                                        </button>
-                                        <button type="submit" 
-                                            style="padding: 8px 12px; background-color: #008CBA; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                            Save
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </form>
+                    <form id="editForm" style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <table style="width: 100%; border-collapse: separate; border-spacing: 0 15px;">
+        <tbody>
+            <tr>
+                <td style="padding: 10px; vertical-align: top;">
+                    <label for="activityName" style="font-weight: bold; display: block; margin-bottom: 5px;">Activity Name:</label>
+                    <input type="text" id="activityName" name="activityName" value="${activity.activity}" 
+                        required 
+                        style="width: 95%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; vertical-align: top;">
+                    <label for="subFolder" style="font-weight: bold; display: block; margin-bottom: 5px;">Add Sub-Folder:</label>
+                    <input type="text" id="subFolder" name="subFolder" 
+                        style="width: 95%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; vertical-align: top;">
+                    <label for="file" style="font-weight: bold; display: block; margin-bottom: 5px;">Upload File:</label>
+                    <input type="file" id="file" name="file" 
+                        style="width: 95%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; vertical-align: top;">
+                    <label for="subFolderSelect" style="font-weight: bold; display: block; margin-bottom: 5px;">Select Sub-Folder:</label>
+                    <select id="subFolderSelect" name="subFolderSelect" 
+                        style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                        <option value="">-- Select Sub-Folder --</option>
+                        ${activity.sub_activities
+                            .map((sub) => `<option value="${sub.name}">${sub.name}</option>`)
+                            .join("")}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; vertical-align: top;">
+                    <label for="fileSelect" style="font-weight: bold; display: block; margin-bottom: 5px;">Select File to Delete:</label>
+                    <select id="fileSelect" name="fileSelect" 
+                        style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                        <option value="">-- Select File --</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; text-align: right;">
+                    <button type="button" id="deleteFileBtn" 
+                        style="padding: 10px 15px; background-color: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-right: 10px;">
+                        Delete File
+                    </button>
+                    <button type="button" id="deleteSubFolderBtn" 
+                        style="padding: 10px 15px; background-color: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                        Delete Sub-Folder
+                    </button>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; vertical-align: top;">
+                    <label for="addFilesInput" style="font-weight: bold; display: block; margin-bottom: 5px;">Add Files to Sub-Folder:</label>
+                    <input type="file" id="addFilesInput" name="addFilesInput" multiple
+                        style="width: 95%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; text-align: right;">
+                    <button type="button" id="addFilesBtn" 
+                        style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-right: 10px;">
+                        Add Files
+                    </button>
+                    <button type="submit" 
+                        style="padding: 10px 15px; background-color: #008CBA; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                        Save
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</form>
+
                 `;
 
                     Swal.fire({
